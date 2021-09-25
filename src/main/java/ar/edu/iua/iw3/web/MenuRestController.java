@@ -68,7 +68,7 @@ public class MenuRestController {
 	}
 	
 	@PutMapping(value="/menu")
-	public ResponseEntity<String> modificar(Menu menu) throws NegocioException, NoEncontradoException {
+	public ResponseEntity<String> modificar(@RequestBody  Menu menu) throws NegocioException, NoEncontradoException {
 		try {
 			menuNegocio.modificar(menu);
 			return new ResponseEntity<String>(HttpStatus.OK);
@@ -80,7 +80,7 @@ public class MenuRestController {
 	}
 	
 	@DeleteMapping(value="/menu/{id}")
-	public ResponseEntity<String> eliminar(long id) throws NegocioException, NoEncontradoException {
+	public ResponseEntity<String> eliminar(@PathVariable("id") long id) throws NegocioException, NoEncontradoException {
 		try {
 			menuNegocio.eliminar(id);
 			return new ResponseEntity<String>(HttpStatus.OK);

@@ -18,4 +18,6 @@ public interface IMenuNegocio {
 	public Menu modificar(Menu menu) throws NegocioException, NoEncontradoException;
 
 	public void eliminar(long id) throws NegocioException, NoEncontradoException;
+
+
 }

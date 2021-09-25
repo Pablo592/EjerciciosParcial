@@ -1,20 +1,14 @@
 package ar.edu.iua.iw3.web;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import ar.edu.iua.iw3.modelo.Menu;
 import ar.edu.iua.iw3.modelo.Restaurant;
 import ar.edu.iua.iw3.negocio.IRestaurantNegocio;
 import ar.edu.iua.iw3.negocio.excepciones.EncontradoException;
@@ -28,7 +22,7 @@ public class RestaurantRestController {
 	private IRestaurantNegocio restaurantNegocio;
 	
 
-	@GetMapping(value="/restaurant")
+	@GetMapping(value="/restaurants")
 	public ResponseEntity<List<Restaurant>> listado() throws NegocioException {
 			try {
 				return new ResponseEntity<List<Restaurant>>(restaurantNegocio.listado(), HttpStatus.OK);
@@ -38,10 +32,36 @@ public class RestaurantRestController {
 
 	}
 
-	@GetMapping(value="/restaurant/{id}")
-	public ResponseEntity<Restaurant> cargar(@PathVariable("id") long id) throws NegocioException, NoEncontradoException {
+	@GetMapping(value="/restaurants/puntaje-mayor")
+	public ResponseEntity<Restaurant> restauranteConPuntajeMayor(){
 		try {
-			return new ResponseEntity<Restaurant>(restaurantNegocio.cargar(id), HttpStatus.OK);
+			return new ResponseEntity<Restaurant>(restaurantNegocio.encontrarRestauranteConMasPuntaje(), HttpStatus.OK);
+		} catch (NegocioException e) {
+			return new ResponseEntity<Restaurant>(HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (NoEncontradoException e) {
+			return new ResponseEntity<Restaurant>(HttpStatus.NOT_FOUND);
+		}
+
+	}
+
+	@GetMapping(value="/restaurants/opens")		//para obtener los parametros que vienen despues del ?
+	public ResponseEntity<List<Restaurant>> restauranteOpens(@RequestParam ("hora") int hora)  {
+		try {
+			Date o = new Date();
+			o.setHours(hora);
+			return new ResponseEntity<List<Restaurant>>(restaurantNegocio.encontrarRestauranteAbiertos(o), HttpStatus.OK);
+		} catch (NegocioException e) {
+			return new ResponseEntity<List<Restaurant>>(HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (NoEncontradoException e) {
+			return new ResponseEntity<List<Restaurant>>(HttpStatus.NOT_FOUND);
+		}
+
+	}
+
+	@GetMapping(value="/restaurants/buscar")
+	public ResponseEntity<Restaurant> buscarRestaurantePorNombre(@RequestParam ("name") String name)  {
+		try {
+			return new ResponseEntity<Restaurant>(restaurantNegocio.encontrarRestaurantePorNombre(name), HttpStatus.OK);
 		} catch (NegocioException e) {
 			return new ResponseEntity<Restaurant>(HttpStatus.INTERNAL_SERVER_ERROR);
 		} catch (NoEncontradoException e) {
@@ -49,8 +69,31 @@ public class RestaurantRestController {
 		}
 	}
 
-	@PostMapping(value="/restaurant")
-	public ResponseEntity<String> agregar(@RequestBody Restaurant restaurant) throws NegocioException, EncontradoException {
+
+	@GetMapping(value="/restaurants/buscarPorComida")
+	public ResponseEntity<List<Restaurant>> buscarRestaurantePorComida(@RequestParam ("comida") String comida)  {
+		try {
+			return new ResponseEntity<List<Restaurant>>(restaurantNegocio.encontrarRestaurantesPorComida(comida), HttpStatus.OK);
+		} catch (NegocioException e) {
+			return new ResponseEntity<List<Restaurant>>(HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (NoEncontradoException e) {
+			return new ResponseEntity<List<Restaurant>>(HttpStatus.NOT_FOUND);
+		}
+	}
+
+	@GetMapping(value="/restaurants/buscarPorDireccion")
+	public ResponseEntity<Restaurant> buscarRestaurantePorDireccion(@RequestParam ("direccion") String direccion)  {
+		try {
+			return new ResponseEntity<Restaurant>(restaurantNegocio.encontrarRestaurantesPorDireccion(direccion), HttpStatus.OK);
+		} catch (NegocioException e) {
+			return new ResponseEntity<Restaurant>(HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (NoEncontradoException e) {
+			return new ResponseEntity<Restaurant>(HttpStatus.NOT_FOUND);
+		}
+	}
+
+	@PostMapping(value="/restaurants")
+	public ResponseEntity<String> agregar(@RequestBody Restaurant restaurant) {
 		try {
 			Restaurant respuesta=restaurantNegocio.agregar(restaurant);
 			HttpHeaders responseHeaders=new HttpHeaders();
@@ -63,8 +106,8 @@ public class RestaurantRestController {
 		}
 	}
 
-	@PutMapping(value="/restaurant")
-	public ResponseEntity<String> modificar(Restaurant restaurant) throws NegocioException, NoEncontradoException {
+	@PutMapping(value="/restaurants")
+	public ResponseEntity<String> modificar(@RequestBody Restaurant restaurant)  {
 		try {
 			restaurantNegocio.modificar(restaurant);
 			return new ResponseEntity<String>(HttpStatus.OK);
@@ -75,8 +118,8 @@ public class RestaurantRestController {
 		}
 	}
 
-	@DeleteMapping(value="/restaurant/{id}")
-	public ResponseEntity<String> eliminar(long id) throws NegocioException, NoEncontradoException {
+	@DeleteMapping(value="/restaurants/{id}")
+	public ResponseEntity<String> eliminar(@PathVariable("id") long id)  {
 		try {
 			restaurantNegocio.eliminar(id);
 			return new ResponseEntity<String>(HttpStatus.OK);
